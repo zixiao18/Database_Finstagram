@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>Build your friend group here</title>
+    </head>
+    <body>
+        <h1>Build your friend group here</h1>
+        <div>
+            <form action="/builfFriendGroup" method="post">
+                <input type="text" name="friends" placeholder="Usernames of friends" required/>
+                <br/>
+                <input type="text" name="group" placeholder="Enter gruop name" required/>
+                <br/>
+                <input type="text" name="desciption" placeholder="Enter description" required/>
+                <br/>
+                <input type="submit" value="Build">
+            </form>
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+    <li><a href="/home">Back to home</a></li>
+    </body>
+</html>
