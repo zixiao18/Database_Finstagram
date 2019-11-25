@@ -49,18 +49,17 @@ def images():
     username = session['username']
 #    query = "SELECT * FROM photo"
 #    query = "SELECT * FROM photo WHERE photoPoster IN (SELECT username_followed FROM Follow WHERE username_follower = %s) OR photoPoster = %s ORDER BY photoID DESC"---------------
-   query = "SELECT * FROM photo JOIN person ON photo.photoPoster = person.username WHERE photoPoster IN (SELECT username_followed FROM Follow WHERE username_follower = %s) OR photoPoster = %s ORDER BY photoID DESC"
-    # query = "SELECT * FROM photo JOIN person ON photo.photoPoster = person.username WHERE ((photoPoster IN (SELECT username_followed FROM Follow WHERE username_follower = %s) OR photoPoster = %s) AND allFollowers = 1) OR (allFollowers = 0 AND photoPoster IN (SELECT member_username FROM BelongTo WHERE owner_username = %s)) ORDER BY photoID DESC"
-
+#    query = "SELECT * FROM photo JOIN person ON photo.photoPoster = person.username WHERE photoPoster IN (SELECT username_followed FROM Follow WHERE username_follower = %s) OR photoPoster = %s ORDER BY photoID DESC"
+    query = "SELECT * FROM photo JOIN person ON photo.photoPoster = person.username WHERE ((photoPoster IN (SELECT username_followed FROM Follow WHERE username_follower = %s) OR photoPoster = %s) AND allFollowers = 1) OR (allFollowers = 0 AND photoPoster IN (SELECT owner_username FROM BelongTo WHERE member_username = %s)) ORDER BY postingDate DESC"
     with connection.cursor() as cursor:
 #        cursor.execute(query)
-        cursor.execute(query, (username, username))
+        cursor.execute(query, (username, username, username))
     data = cursor.fetchall()
 #    print(data)
-
+    
     for j in range(len(data)):
         photoID = data[j]['photoID']
-
+        
         # tagged
         query = "SELECT username, firstName, lastName FROM tagged NATURAL JOIN person WHERE photoID = %s"
         with connection.cursor() as cursor:
@@ -70,7 +69,7 @@ def images():
         for i in tagged_list:
             to_join += i['username'] + ': ' + i['firstName'] + ' ' + i['lastName'] + ', '
         data[j]['tagged'] = to_join
-
+        
         # liked
         query = "SELECT username, rating FROM likes WHERE photoID = %s"
         with connection.cursor() as cursor:
@@ -80,7 +79,7 @@ def images():
         for i in liked_list:
             to_join += i['username'] + ': ' + str(i['rating']) + ', '
         data[j]['liked'] = to_join
-
+    
 
     return render_template("images.html", images=data)
 
@@ -105,6 +104,20 @@ def follow():
 @app.route("/friend", methods=["GET"])
 def friend():
     return render_template("friend.html")
+
+@app.route("/friend_groups", methods=["GET"])
+def friend_groups():
+    username = session['username']
+    query = "SELECT groupName, description FROM Friendgroup WHERE groupOwner = %s "
+    with connection.cursor() as cursor:
+        cursor.execute(query, (username))
+    data = cursor.fetchall()
+    
+    for j in range(len(data)):
+        groupName = data[j]['groupName']
+        description = data[j]['description']
+    
+    return render_template("friend_groups.html", friend_groups=data)
 
 @app.route("/loginAuth", methods=["POST"])
 def loginAuth():
@@ -137,10 +150,10 @@ def registerAuth():
         hashedPassword = hashlib.sha256(plaintextPasword.encode("utf-8")).hexdigest()
         firstName = requestData["fname"]
         lastName = requestData["lname"]
-
+        
         bio = "tempory biograph, havent implemented"
         bio = requestData["bio"]
-
+        
         try:
             with connection.cursor() as cursor:
 #                query = "INSERT INTO person (username, password, fname, lname) VALUES (%s, %s, %s, %s)"
@@ -148,10 +161,10 @@ def registerAuth():
 
 #                cursor.execute(query, (username, hashedPassword, firstName, lastName))
                 cursor.execute(query, (username, hashedPassword, firstName, lastName, bio))
-
+                
         except pymysql.err.IntegrityError:
             error = "%s is already taken." % (username)
-            return render_template('register.html', error=error)
+            return render_template('register.html', error=error)    
 
         return redirect(url_for("login"))
 
@@ -169,53 +182,53 @@ def upload_image():
     if request.files:
         image_file = request.files.get("imageToUpload", "")
         image_name = image_file.filename
-
+        
         if request.form:
             requestData = request.form
             allFollowers = requestData["allFollowers"]
             caption = requestData["caption"]
-
+            
             tag_person = requestData["tag_person"]
             photoID = 0 # to be define later
             tagstatus = 1
-
+            
 #            allFollowers = 1
 #            caption = 'The caption, to be implemented'
-
-
+        
+        
         photoPoster = session['username']
-
+        
         filepath = os.path.join(IMAGES_DIR, image_name)
         image_file.save(filepath)
-
+        
         query = "INSERT INTO photo (postingdate, filepath, allFollowers, caption, photoPoster) VALUES (%s, %s, %s, %s, %s)"
-
-        query2 = "INSERT INTO Tagged (username, photoID, tagstatus) VALUES (%s, %s, %s)"
-
+        
+        query2 = "INSERT INTO Tagged (username, photoID, tagstatus, Friends_group) VALUES (%s, %s, %s, %s)"
+        
         with connection.cursor() as cursor:
-
+            
             cursor.execute(query, (time.strftime('%Y-%m-%d %H:%M:%S'), image_name, allFollowers, caption, photoPoster))
-
+            
             if tag_person:
                 cursor.execute("SELECT MAX(photoID) FROM photo")
                 photoID = cursor.fetchall()[0]['MAX(photoID)']
 
                 if not photoID:
                     photoID = 1
-
+                    
                 for name in tag_person.split():
                     cursor.execute(query2, (name, photoID, tagstatus))
-
-
-
+                
+            
+            
         message = "Image has been successfully uploaded."
-
-
+        
+        
         return render_template("upload.html", message=message)
     else:
         message = "Failed to upload image."
         return render_template("upload.html", message=message)
-
+    
 @app.route("/followSomeone", methods=["POST"])
 @login_required
 def followSomeone():
@@ -225,25 +238,25 @@ def followSomeone():
         username_followed = requestData["followed"]
         username_follower = session['username']
         followstatus = 1
-
+        
         cursor = connection.cursor()
         cursor.execute("SELECT 1 FROM Person WHERE username = %s", username_followed)
-
+        
         result = cursor.fetchall() # need to see the result
         print(result)
         if not result:
-            return render_template('follow.html', error="Username you entered doesn't exist")
-
-
+            return render_template('follow.html', error="Username you entered doesn't exist")    
+        
+        
         try:
             with connection.cursor() as cursor:
                 query = "INSERT INTO Follow (username_followed, username_follower, followstatus) VALUES (%s, %s, %s)"
 
                 cursor.execute(query, (username_followed, username_follower, followstatus))
-
+                
         except pymysql.err.IntegrityError:
             error = "You have already followed %s." % (username_followed)
-            return render_template('follow.html', error=error)
+            return render_template('follow.html', error=error)    
 
         return redirect(url_for("follow"))
 
@@ -255,7 +268,7 @@ def followSomeone():
 @app.route("/likes", methods=["POST"])
 @login_required
 def likes():
-
+    
     if request.form:
         requestData = request.form
         username = session['username']
@@ -264,16 +277,16 @@ def likes():
 #        photoID = 2
 #        rating = 9
 #        request.form.get("something", False)
-
+        
         try:
             with connection.cursor() as cursor:
                 query = "INSERT INTO Likes (username, photoID, liketime, rating) VALUES (%s, %s, %s, %s)"
 
                 cursor.execute(query, (username, photoID, time.strftime('%Y-%m-%d %H:%M:%S'), rating))
-
+                
         except pymysql.err.IntegrityError:
             error = "You have already liked post %s." % (photoID)
-            return render_template('images.html', error=error)
+            return render_template('images.html', error=error)    
 
         return redirect(url_for("images"))
 
@@ -289,33 +302,33 @@ def builfFriendGroup():
         username = session['username']
         group_name = requestData["group"]
         friends = requestData["friends"]
-
+        
         description = requestData['desciption']
-
+        
         cursor = connection.cursor()
         cursor.execute("SELECT 1 FROM Friendgroup WHERE groupOwner = %s AND groupName = %s", (username, group_name))
-
+        
         result = cursor.fetchall() # need to see the result
         if result:
             return render_template('friend.html', error="groupName already exists")
-
+        
         query = "INSERT INTO Friendgroup (groupOwner, groupName, description) VALUES (%s, %s, %s)"
         cursor.execute(query, (username, group_name, description))
-
+        
         for friend in friends.split():
 #            try:
             with connection.cursor() as cursor:
                 query = "INSERT INTO BelongTo (member_username, owner_username, groupName) VALUES (%s, %s, %s)"
-
+    
                 cursor.execute(query, (friend, username, group_name))
-
+                
         with connection.cursor() as cursor:
                 query = "INSERT INTO BelongTo (member_username, owner_username, groupName) VALUES (%s, %s, %s)"
                 cursor.execute(query, (username, username, group_name))
-
+                    
 #            except pymysql.err.IntegrityError:
 #                error = "You have already created %s." % (username_followed)
-#                return render_template('follow.html', error=error)
+#                return render_template('follow.html', error=error)    
 
 #        return redirect(url_for("friend"))
         return render_template("friend.html", error="Successfully build!")
@@ -326,4 +339,5 @@ def builfFriendGroup():
 if __name__ == "__main__":
     if not os.path.isdir("images"):
         os.mkdir(IMAGES_DIR)
-    app.run()
+   # app.run()
+    app.run('127.0.0.1', 5003, debug = True)
