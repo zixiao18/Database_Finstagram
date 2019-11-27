@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <title>Follow someone here</title>
+    </head>
+    <body>
+        <h1>follow</h1>
+        <div>
+            <form action="/followSomeone" method="post">
+                <input type="text" name="followed" placeholder="Username you want to follow" required/>
+                <br/>
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+    <li><a href="/home">Back to home</a></li>
+    </body>
+</html>

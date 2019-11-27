@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>Finstagram</title>
+    </head>
+    <body>
+        <h1>Image Gallery</h1>
+        <div>
+
+            
+            <p> <img src="images/upload_image.png" width="300"/> </p>
+
+            <!-- <p>Location: {{image.filepath}}</p> -->
+            <p>Photo_path: {{image.filepath}}</p>
+            <p>Photo ID: {{image.photoID}}</p>
+            <p>Caption: {{image.caption}}</p>
+            <p>Username: {{image.photoPoster}}</p>
+            <!-- first name, last name -->
+            <p>First name: {{image.firstName}}</p>
+            <p>Last name: {{image.lastName}}</p>
+
+            <p>Posting date: {{image.postingdate}}</p>
+            <!-- first name, last name, usernames of people being tagged -->
+            <p>Tagged person: {{image.tagged}}</p>
+
+            <!-- username of people who liked it and their rating -->
+            <p>Liked person: {{image.liked}}</p>
+
+
+
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+        <a href="/">Go back</a>
+    </body>
+</html>
