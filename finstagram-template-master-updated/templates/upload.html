@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <title>Image Upload</title>
+    </head>
+    <body>
+        <h1>Upload an Image!</h1>
+        <div>
+            <form action="/uploadImage" method="post" enctype="multipart/form-data">
+                <input type="file" name="imageToUpload" accept="image/*">
+                <br/>
+                <input type="text" name="caption" placeholder="Caption" required/>
+                <br/>
+                <input type="text" name="allFollowers" placeholder="Share with all followers?" required/>
+                <br/>
+                <input type="text" name="tag_person" placeholder="Enter username if you want to tag him/her">
+                <br/>
+                <input type="text" name="friends_group" placeholder="Enter the friend_group you want to share with">
+                <br/>
+                <input type="submit" value="Upload">
+            </form>
+        </div>
+        {% if message %}
+            {{ message }}
+        {% endif %}
+        <br/>
+        <a href="/">Go back</a>
+    </body>
+</html>

@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <title>Finstagram</title>
+    </head>
+    <body>
+        <h1>Your Friend Groups</h1>
+        <div>
+            {% for group in friend_groups %}
+
+            <p>groupName: {{group.groupName}}</p>
+            <p>description: {{group.description}}</p>
+            {% endfor %}
+            
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+        <a href="/">Go back</a>
+    </body>
+</html>
