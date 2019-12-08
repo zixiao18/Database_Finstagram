@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <title>Unfollow someone here</title>
+    </head>
+    <body>
+        <h1>unfollow</h1>
+        <div>
+            <form action="/unfollowSomeone" method="post">
+                <input type="text" name="unfollowed" placeholder="Username you want to unfollow" required/>
+                <br/>
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+        {% if message %}
+            {{ message }}
+        {% endif %}
+    <li><a href="/home">Back to home</a></li>
+    </body>
+</html>

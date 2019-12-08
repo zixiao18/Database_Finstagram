@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Finstagram</title>
+    </head>
+    <body>
+        <h1>Follow Requests</h1>
+        <div>  
+            {% for items in follow_lists %}
+                
+                <p>Your follow requests are attached below<p>
+                <p>Request from: {{items.username_follower}}<p>
+                <p>Do you accept the request?<p>
+                
+                <form action="/accept_follow" method="post">
+                    <input type="hidden" name="username_follower" value={{items.username_follower}}  required/>
+                    <input type="submit" value="Accept">
+                </form>
+
+                <form action="/reject_follow" method="post">
+                    <input type="hidden" name="username_follower" value={{items.username_follower}}  required/>
+                    <input type="submit" value="Reject">
+                </form>
+                
+            {% endfor %}
+            
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+        {% if message %}
+            {{ message }}
+        {% endif %}
+          
+        <p><a href="/view_follow_status">Continue managing follow status</a></p>
+        <p><a href="/">Back to main menu</a></p>
+    </body>
+</html>

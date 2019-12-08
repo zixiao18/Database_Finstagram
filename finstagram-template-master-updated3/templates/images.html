@@ -1,0 +1,70 @@
+<html>
+    <head>
+        <title>Finstagram</title>
+    </head>
+    <body>
+        <h1>Image Gallery</h1>
+        <div>
+            <form action="/images_poster" method="post">
+                <input type="text" name="images_poster" placeholder="Enter a username" required/>
+                <br/>
+                <input type="submit" value="Search by poster">
+            </form>
+                        
+            <form action="/images_tag" method="post">
+                <input type="text" name="images_tag" placeholder="Enter a username" required/>
+                <br/>
+                <input type="submit" value="Search by tag">
+            </form>
+            
+            {% for image in images %}
+
+            <!-- <img src="images/{{image.filePath}}" width="300"/> -->
+            <p><img src="static/{{image.filepath}}" width="300"/></p>
+            <!-- <img src="images/983794168.jpg" width="300"  /> -->
+
+            <!-- <p>Location: {{image.filepath}}</p> -->
+            <p>Photo_path: {{image.filepath}}</p>
+            <p>Photo ID: {{image.photoID}}</p>
+            <p>Caption: {{image.caption}}</p>
+            <p>Poster's username: {{image.photoPoster}}</p>
+            <!-- first name, last name -->
+            <p>First name: {{image.firstName}}</p>
+            <p>Last name: {{image.lastName}}</p>
+
+            <p>Posting date: {{image.postingdate}}</p>
+            <!-- first name, last name, usernames of people being tagged -->
+            <p>Tagged person: {{image.tagged}}</p>
+
+            <!-- username of people who liked it and their rating -->
+            <p>Liked person: {{image.liked}}</p>
+
+            <!-- username of people who commented it and their comments -->
+            <p>Comments: {{image.commented}}</p>
+
+            <form action="/likes" method="post">
+                <input type="text" name="rating" placeholder="Enter a score" required/>
+                <br/>
+                <input type="hidden" name="photoID" value={{image.photoID}}  required/>
+                <!-- placeholder="Enter photo ID" -->
+                <br/>
+                <input type="submit" value="Like">
+            </form>
+
+            <form action="/comments" method="post">
+                <input type="text" name="commenting" placeholder="Enter your comment" required/>
+                <br/>
+                <input type="hidden" name="photoID" value={{image.photoID}}  required/>
+                <!-- placeholder="Enter photo ID" -->
+                <br/>
+                <input type="submit" value="Comment">
+            </form>
+
+            {% endfor %}
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+        <a href="/">Go back</a>
+    </body>
+</html>
